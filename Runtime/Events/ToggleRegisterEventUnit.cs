@@ -25,7 +25,7 @@ namespace Bolt.Toolkit
 
 		private ControlOutput m_trigger;
 
-		protected GraphReference m_graphReference;
+		protected IMachine m_machine;
 		protected K m_monitored;
 		protected TArgs m_eventArgs;
 		private bool m_registered;
@@ -38,7 +38,8 @@ namespace Bolt.Toolkit
 		protected sealed override bool register { get; }
 		protected virtual string hookName { get; }
 
-		protected MonoBehaviour owner => m_graphReference?.gameObject.GetComponent<Variables>();
+		protected GraphReference graphReference => GraphReference.New(m_machine, true);
+		protected MonoBehaviour owner => graphReference?.gameObject.GetComponent<Variables>();
 
 		protected virtual bool showMonitored => true;
 		protected virtual bool showEventArgs => true;
@@ -91,6 +92,7 @@ namespace Bolt.Toolkit
 
 		protected bool AttemptRegister(Flow flow)
 		{
+			// TODO: Fix problem where macro units are only registered once
 			if (m_registered)
 				return false;
 
@@ -145,9 +147,9 @@ namespace Bolt.Toolkit
 
 		public override void StartListening(GraphStack stack)
 		{
-			m_graphReference = stack.ToReference();
+			m_machine = stack.machine;
 
-			if (startOn && AttemptRegister(Flow.New(m_graphReference)))
+			if (startOn && AttemptRegister(Flow.New(graphReference)))
 			{
 				base.StartListening(stack);
 			}
@@ -194,10 +196,9 @@ namespace Bolt.Toolkit
 
 		protected virtual void InvokeTrigger()
 		{
-			if (m_graphReference != null)
+			if (graphReference != null)
 			{
-				var flow = Flow.New(m_graphReference);
-				flow?.Invoke(m_trigger);
+				Flow.New(graphReference)?.Invoke(m_trigger);
 			}
 		}
 

@@ -13,13 +13,14 @@ namespace Bolt
 		[DoNotSerialize, PortLabelHidden]
 		public ControlOutput exit;
 
-		protected GraphReference m_graphReference;
+		protected IMachine m_machine;
 
 		#endregion
 
 		#region Properties
 
-		protected MonoBehaviour owner => m_graphReference?.gameObject.GetComponent<Variables>();
+		protected GraphReference graphReference => GraphReference.New(m_machine, true);
+		protected MonoBehaviour owner => graphReference?.gameObject.GetComponent<Variables>();
 
 		#endregion
 
@@ -35,7 +36,7 @@ namespace Bolt
 
 		private ControlOutput ProcessInternal(Flow flow)
 		{
-			m_graphReference = flow.stack.AsReference();
+			m_machine = flow.stack.machine;
 			Process(flow);
 
 			return exit;
@@ -45,8 +46,7 @@ namespace Bolt
 
 		protected void InvokeControlOutput(ControlOutput output)
 		{
-			var flow = Flow.New(m_graphReference);
-			flow?.Invoke(output);
+			Flow.New(graphReference)?.Invoke(output);
 		}
 
 		#endregion
