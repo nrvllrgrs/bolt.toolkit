@@ -25,7 +25,7 @@ namespace Bolt.Toolkit
 
 		private ControlOutput m_trigger;
 
-		protected IMachine m_machine;
+		private GraphReference m_graphReference;
 		protected K m_monitored;
 		protected TArgs m_eventArgs;
 		private bool m_registered;
@@ -38,7 +38,7 @@ namespace Bolt.Toolkit
 		protected sealed override bool register { get; }
 		protected virtual string hookName { get; }
 
-		protected GraphReference graphReference => GraphReference.New(m_machine, true);
+		protected GraphReference graphReference => m_graphReference;
 		protected MonoBehaviour owner => graphReference?.gameObject.GetComponent<Variables>();
 
 		protected virtual bool showMonitored => true;
@@ -147,7 +147,8 @@ namespace Bolt.Toolkit
 
 		public override void StartListening(GraphStack stack)
 		{
-			m_machine = stack.machine;
+			//m_machine = stack.machine;
+			m_graphReference = stack.ToReference();
 
 			if (startOn && AttemptRegister(Flow.New(graphReference)))
 			{
